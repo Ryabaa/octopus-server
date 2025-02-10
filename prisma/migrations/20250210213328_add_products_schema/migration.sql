@@ -1,30 +1,39 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "avatar" TEXT,
+    "password" TEXT,
+    "createdWith" TEXT NOT NULL,
+    "refreshToken" TEXT,
+    "profileSettings" JSONB,
+    "telegram" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-  - The primary key for the `User` table will be changed. If it partially fails, the table could be left without primary key constraint.
-  - You are about to drop the column `name` on the `User` table. All the data in the column will be lost.
-  - Added the required column `accessToken` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updatedAt` to the `User` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `username` to the `User` table without a default value. This is not possible if the table is not empty.
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
-*/
--- DropIndex
-DROP INDEX "User_email_key";
+-- CreateTable
+CREATE TABLE "Product" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
 
--- AlterTable
-ALTER TABLE "User" DROP CONSTRAINT "User_pkey",
-DROP COLUMN "name",
-ADD COLUMN     "accessToken" TEXT NOT NULL,
-ADD COLUMN     "avatar" TEXT,
-ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "profileSettings" JSONB,
-ADD COLUMN     "telegram" TEXT,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL,
-ADD COLUMN     "username" TEXT NOT NULL,
-ALTER COLUMN "id" DROP DEFAULT,
-ALTER COLUMN "id" SET DATA TYPE TEXT,
-ADD CONSTRAINT "User_pkey" PRIMARY KEY ("id");
-DROP SEQUENCE "User_id_seq";
+    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProductItem" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "availability" INTEGER NOT NULL,
+    "productId" INTEGER NOT NULL,
+
+    CONSTRAINT "ProductItem_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Order" (
@@ -78,6 +87,9 @@ CREATE TABLE "Assembler" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Admin_login_key" ON "Admin"("login");
 
 -- CreateIndex
@@ -85,6 +97,9 @@ CREATE UNIQUE INDEX "Manager_login_key" ON "Manager"("login");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Assembler_login_key" ON "Assembler"("login");
+
+-- AddForeignKey
+ALTER TABLE "ProductItem" ADD CONSTRAINT "ProductItem_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
