@@ -22,7 +22,7 @@ export class AuthService {
     const tokens = this.generateTokens(user.id, user.email);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
     return res.redirect(
-      `${process.env.FRONTEND_URL}/auth-success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+      `${process.env.FRONTEND_URL}/auth-success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}&userId=${user.id}`,
     );
   }
 
@@ -51,6 +51,7 @@ export class AuthService {
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
+      userId: user.id,
     };
   }
 
@@ -59,12 +60,6 @@ export class AuthService {
 
     if (existingUser) {
       throw new BadRequestException('Email занят другим пользователем');
-    }
-
-    if (existingUser?.createdWith !== 'email') {
-      throw new BadRequestException(
-        'Пользователь с таким Email создан через Google, попробуйте войти через Google',
-      );
     }
 
     const hashedPassword = await bcrypt.hash(userData.password, 10);
@@ -83,11 +78,13 @@ export class AuthService {
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
+      userId: newUser.id,
     };
   }
 
   generateTokens(userId: string, email: string) {
     const payload = { sub: userId, email };
+
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
       secret: process.env.JWT_ACCESS_SECRET,
@@ -98,10 +95,13 @@ export class AuthService {
       secret: process.env.JWT_REFRESH_SECRET,
     });
 
+    console.log('accessToken' + accessToken, 'refresh' + refreshToken);
+
     return { accessToken, refreshToken };
   }
 
   async updateRefreshToken(userId: string, refreshToken: string) {
+    console.log('UPDATE:   ' + refreshToken);
     const hashedRefreshToken = await this.hashToken(refreshToken);
     await this.prisma.user.update({
       where: { id: userId },
@@ -110,7 +110,7 @@ export class AuthService {
   }
 
   async refreshTokens(refreshToken: string) {
-    console.log(refreshToken);
+    console.log('шо не так?????' + refreshToken);
     try {
       const payload = this.jwtService.verify(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,

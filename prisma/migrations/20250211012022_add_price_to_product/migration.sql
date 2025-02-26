@@ -21,6 +21,8 @@ CREATE TABLE "Product" (
     "name" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "image" TEXT NOT NULL,
+    "price" JSONB NOT NULL,
+    "test" TEXT NOT NULL,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );

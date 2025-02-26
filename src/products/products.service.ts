@@ -6,10 +6,15 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async getAllProducts() {
-    const allProducts = this.prisma.product.findMany({
+    const allProducts = await this.prisma.product.findMany({
       include: { items: true },
     });
-    console.log(allProducts);
-    return allProducts;
+
+    const productsWithParsedPrice = allProducts.map((product) => ({
+      ...product,
+      price: JSON.parse(product.price as string),
+    }));
+
+    return productsWithParsedPrice;
   }
 }
